@@ -8,7 +8,7 @@ function makePerlinPopulation(filename)
 pixel_width = 1/136;      % (mm)
 
 % Specify the number of particles to use for ABC-SMC
-N_parts = 50;
+N_parts = 500;
 
 % Specify whether to match a histological pattern, or to match to a set of provided "true" parameter values
 match_histo = 1;
@@ -79,17 +79,19 @@ theta_mins(scale_param) = log(theta_mins(scale_param));
 theta_maxs = params_maxs;
 theta_maxs(scale_param) = log(theta_maxs(scale_param));
 
-% Define the function used for simulating the model (here generating a pattern) in the ABC-SMC
-f_simulate = @(params, P, offsets) createFibroPatternSeeded(points, density, params, P, offsets);
-% Define the function used for calculating summary statistics in the ABC-SMC
-f_summaries = @calculateMetrics;
+% Define the function used for simulating the model (here generating a pattern) in the SMC-ABC
+f_simulate = @(params, P, offsets) createFibroPattern(points, density, params, P, offsets);
+% Define the function used for calculating summary statistics in the SMC-ABC
+f_summaries = @ellipseMetrics;
+% Define the function used for calculating discrepancies between summary statistics
+f_discrepancy = @ellipseDiscrepancy;
 % Define the function for visualisation
 target_ellipses = f_summaries(target_pattern);
 f_visualise = @(params, patterns, ellipses, discrepancies) visualiseResults_Fibrosis(params, patterns, ellipses, discrepancies, target_pattern, target_ellipses, theta_mins, theta_maxs);
 
 % Run the ABC-SMC
 %[part_thetas, part_vals, part_metrics, part_Ds] = performABCSMC(N_parts, f_simulate, f_summaries, target_pattern, params_mins, params_maxs, scale_param, 1e-2, 1, f_visualise);
-[part_thetas, part_vals, part_metrics, part_Ds] = performABCSMC_FibroSeeds(N_parts, f_simulate, f_summaries, target_pattern, params_mins, params_maxs, scale_param, 1e-2, 1, f_visualise);
+[part_thetas, part_vals, part_metrics, part_Ds] = performABCSMC_Fibro(N_parts, f_simulate, f_summaries, f_discrepancy, target_pattern, params_mins, params_maxs, scale_param, 1e-2, 1, f_visualise);
 
 % (TO CHANGE TO MORE BAYESIAN INTERPRETATION)
 % Save only the unique particles

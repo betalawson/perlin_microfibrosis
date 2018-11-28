@@ -54,7 +54,7 @@ phasefield_strength = 8;
 % points, then call Octave2D)
 phasefield_points = [ R_points(1,:) / sqrt(phasefield_anisotropy); R_points(2,:) * sqrt(phasefield_anisotropy) ];      % Scale dimensions according to anisotropy (multiplication by "D" in paper)
 phasefield_points = phasefield_points / phasefield_featuresize;                                                                % Attain base featuersize for this noisefield (appliation of 1/d factor in paper)
-phasefield = Octave2DSeeded(phasefield_points, 3, 0.4, Ps, offsets);    % (3 octaves, low roughness for phasefield)
+phasefield = Octave2D(phasefield_points, 3, 0.4, Ps, offsets);    % (3 octaves, low roughness for phasefield)
 
 % Create the sinusoidal pattern using cos(RX^T [0; 1] ), then modulate phase using
 % the created phasefield
@@ -69,14 +69,14 @@ S = S .* S .* S .* S .* S .* S .* S .* S .* S .* S .* S .* S .* S .* S .* S;
 
 % Transform points according to input parameters, then call Octave2D
 P_f_points = [ R_points(1,:) / sqrt(fibre_alignment); R_points(2,:) * sqrt(fibre_alignment) ];
-P_f = Octave2DSeeded( P_f_points / feature_size, 4, roughness, Ps2, offsets);
+P_f = Octave2D( P_f_points / feature_size, 4, roughness, Ps2, offsets);
 
 
 
 %%% CREATE A LARGE-SCALE PERLIN NOISE PATTERN FOR DENSITY VARIATION
 
 % Use Octave2D with scaling of point co-ords to attain desired patch_size
-P_p = Octave2DSeeded(mesh.points' / patch_size, 3, 0.5, Ps3, offsets);
+P_p = Octave2D(mesh.points' / patch_size, 3, 0.5, Ps3, offsets);
 
 
 
