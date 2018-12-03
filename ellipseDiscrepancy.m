@@ -20,8 +20,7 @@ function D = ellipseDiscrepancy(metrics, target_metrics, invC)
 
 % Calculate the scaling factors for the angles based on the different
 % eccentricities
-%angle_scalings = abs( log(  [ target_metrics(2) / target_metrics(3), target_metrics(5) / target_metrics(6), target_metrics(8) / target_metrics(9) ] ) );
-angle_scalings = ones(1,3);
+angle_scalings = abs( log(  [ target_metrics(2) / target_metrics(3), target_metrics(5) / target_metrics(6), target_metrics(8) / target_metrics(9) ] ) );
 
 % Calculate the base distances between the metrics
 dM = metrics - target_metrics;
