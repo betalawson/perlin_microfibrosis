@@ -103,9 +103,9 @@ metric_weighting = 'variance';  % 'mahalanobis' - Mahalanobis distance is used f
                                    % 'none' - Euclidean distance is used 
                                    % (All options still include rescaling of angle metrics with respect to eccentricity)
                                
-keep_fraction = 0.5;         % The proportion of particles to keep during each resample step (recommended 0.5 as a starting value)
+keep_fraction = 0.75;         % The proportion of particles to keep during each resample step (recommended ~0.5 as a starting value)
 
-max_MCMC_steps = 200;         % The maximum number of 'jiggle' steps applied to all particles in the attempt to find unique locations
+max_MCMC_steps = 300;         % The maximum number of 'jiggle' steps applied to all particles in the attempt to find unique locations
                             
 verbose = 1;                 % Output information about particle uniqueness and discrepancy targets
                              
@@ -140,23 +140,25 @@ end
 
 % If options were provided, overwrite the default options with the custom
 % options that were provided
-if isfield(options,'jumping_type')
-    jumping_type = options.jumping_type;
-end
-if isfield(options,'resample_weighting')
-    resample_weighting = options.resample_weighting;
-end
-if isfield(options,'metric_weighting')
-    metric_weighting = options.metric_weighting;
-end
-if isfield(options,'keep_fraction')
-    keep_fraction = options.keep_fraction;
-end
-if isfield(options,'max_MCMC_steps')
-    max_MCMC_steps = options.max_MCMC_steps;
-end
-if isfield(options,'verbose')
-    verbose = options.verbose;
+if options_provided
+    if isfield(options,'jumping_type')
+        jumping_type = options.jumping_type;
+    end
+    if isfield(options,'resample_weighting')
+        resample_weighting = options.resample_weighting;
+    end
+    if isfield(options,'metric_weighting')
+        metric_weighting = options.metric_weighting;
+    end
+    if isfield(options,'keep_fraction')
+        keep_fraction = options.keep_fraction;
+    end
+    if isfield(options,'max_MCMC_steps')
+        max_MCMC_steps = options.max_MCMC_steps;
+    end
+    if isfield(options,'verbose')
+        verbose = options.verbose;
+    end
 end
 							 
 							 
