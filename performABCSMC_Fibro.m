@@ -1,4 +1,4 @@
-function [part_thetas, part_outputs, part_summaries, part_Ds] = performABCSMC_Fibro(N_parts, f_simulate, f_summaries, f_discrepancy, target_data, params_mins, params_maxs, scale_param, desired_D, visualise, f_visualise)
+function [part_thetas, part_outputs, part_summaries, part_Ds] = performABCSMC_Fibro(N_parts, f_simulate, f_summaries, f_discrepancy, target_data, params_mins, params_maxs, scale_param, desired_D, visualise, varargin)
 
 % This function performs SMC-ABC as laid out by Drovandi and Pettitt (2011)
 % Sets of particles satisfying a set of intermediary "discrepancy cutoffs"
@@ -8,11 +8,9 @@ function [part_thetas, part_outputs, part_summaries, part_Ds] = performABCSMC_Fi
 % calculate the discrepancy with the target data. Further options may be 
 % specified by the user within the body of the program.
 %
-% The 'transform' jumping distribution is also credit Chris Drovandi, used
-% in Drovandi et al. (2016) and Lawson et al. (2018).
+% The 'transform' jumping distribution method was provided by Christopher
+% Drovandi, as laid out in South et al. (2018)
 %
-% Some parameters for the method are specified not as inputs, but in the
-% code itself, and may be modified by the user
 %
 % Usage:   [part_thetas, part_vals] = SMC_ABC(N_parts, f_simulate, f_discrep, target_data, theta_mins, theta_maxs, desired_D, visualise, f_visualise)
 %
@@ -66,7 +64,20 @@ function [part_thetas, part_outputs, part_summaries, part_Ds] = performABCSMC_Fi
 %                 Syntax must be
 %                    visFunc( params, outputs, summaries, discrepancies )
 %                 
-
+% (options) - A struct containing modifications to the SMC-ABC algorithm's
+%             default options/parameters. Information regarding these is
+%             contained within the file. User may set:
+%
+%             options.jumping_type ('normal', 'transform')
+%             options.resample_weighting ('equal', 'weighted')
+%             options.metric_weighting ('mahalanobis', 'variance', 'none')
+%             options.keep_fraction ([0,1])
+%             options.max_MCMC_steps (positive integer)
+%             options.verbose (0 - false, 1 - true)
+%
+% For optional outputs, (options) must come last (but can be supplied after
+% 'visualise' flag if it is set to zero)
+%
 % OUTPUTS
 % --------
 %
@@ -75,8 +86,8 @@ function [part_thetas, part_outputs, part_summaries, part_Ds] = performABCSMC_Fi
 % part_vals - The model outputs corresponding to each particle
 
 
-% User-specified options
-jumping_type = 'transform';  % 'normal' - use multivariate normal jumping distribution (with 'optimal' scaling of covariance matrix, 
+% Default options (can be changed here or adjusted on the fly by supplying options argument)
+jumping_type = 'normal';  % 'normal' - use multivariate normal jumping distribution (with 'optimal' scaling of covariance matrix, 
                              %            which is defined by currrent particle locations)
                              % 'transform' - use a series of probability transforms to attain normal marginals, then fit a three 
                              %               component Gaussian mixture to the transformed data, and generate proposals from this 
@@ -87,19 +98,69 @@ resample_weighting = 'equal';  % 'equal' - All kept particles are weighted equal
                                %              worst kept particle as three sigma in a normal distribution, and then normalising
                                %              weights so they sum to one)
                                
-metric_weighting = 'mahalanobis';  % 'mahalanobis' - Mahalanobis distance is used for calculations of discrepancy
+metric_weighting = 'variance';  % 'mahalanobis' - Mahalanobis distance is used for calculations of discrepancy
                                    % 'variance' - Metrics are scaled according to their variance, but covariances are ignored
                                    % 'none' - Euclidean distance is used 
                                    % (All options still include rescaling of angle metrics with respect to eccentricity)
                                
-keep_fraction = 0.75;         % The proportion of particles to keep during each resample step (recommended 0.5 as a starting value)
+keep_fraction = 0.5;         % The proportion of particles to keep during each resample step (recommended 0.5 as a starting value)
 
 max_MCMC_steps = 200;         % The maximum number of 'jiggle' steps applied to all particles in the attempt to find unique locations
                             
 verbose = 1;                 % Output information about particle uniqueness and discrepancy targets
                              
 
-%%%%%%%%%%%%%%%%%%%%%%%%%% CODE STARTS HERE %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%% INPUT HANDLING %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Loop over optional input arguments, and set them accordingly
+f_visualise_provided = false;
+options_provided = false;
+for k = 1: nargin - 10    % 10 set inputs, only loop over extras
+    
+    % Check if this is a function-type input (in which case it will be f_visualise)
+    if isa(varargin{k},'function_handle')
+        f_visualise = varargin{k};
+        f_visualise_provided = true;
+    % Check if this is a struct-type input (in which case it will be options)
+    elseif isa(varargin{k}, 'struct')
+        options = varargin{k};
+        options_provided = true;
+    % Otherwise, give warning, but continue
+    else
+        fprintf('Warning: Optional input provided to performABCSMC_Fibro but not in an appropriate format \n'); 
+    end
+    
+end
+
+% Cannot visualise if no visualisation function provided
+if visualise && ~f_visualise_provided
+    fprintf('Warning: No visualisation function provided. Continuing without visualisation... \n');
+    visualise = 0;
+end
+
+% If options were provided, overwrite the default options with the custom
+% options that were provided
+if isfield(options,'jumping_type')
+    jumping_type = options.jumping_type;
+end
+if isfield(options,'resample_weighting')
+    resample_weighting = options.resample_weighting;
+end
+if isfield(options,'metric_weighting')
+    metric_weighting = options.metric_weighting;
+end
+if isfield(options,'keep_fraction')
+    keep_fraction = options.keep_fraction;
+end
+if isfield(options,'max_MCMC_steps')
+    max_MCMC_steps = options.max_MCMC_steps;
+end
+if isfield(options,'verbose')
+    verbose = options.verbose;
+end
+							 
+							 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%% CODE STARTS HERE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Calculate the summaries for the target data
 target_summaries = f_summaries(target_data);
@@ -427,8 +488,6 @@ f = sum( log( theta(1) * betapdf( x, theta(2), theta(3)) + (1-theta(1)) * betapd
 end
 
 
-
-
 function [theta, output, summaries, D, moved] = MVN_move(N_moves, theta, output, summaries, D, Ctheta, theta_mins, theta_maxs, scale_param, target_D, f_simulate, f_summaries, f_discrep)
 % This function performs MCMC updates ('move steps' or 'mutations') for a
 % single particle, using a multivariate normal jumping distribution
@@ -443,32 +502,33 @@ for k = 1:N_moves
     % requested point
     prop_theta = mvnrnd(theta, Ctheta);
     
-    % Pin this point to the boundary if it tried to go outside of it
-    prop_theta = min([prop_theta; theta_maxs]);
-    prop_theta = max([prop_theta; theta_mins]);
+    % Instant rejection if particle moves outside boundary, so only process
+    % if new proposed location is inside prior space
+    if all(prop_theta <= theta_maxs) && all(prop_theta >= theta_mins)
+        
+        % Convert scaling parameters back into true values for simulation
+        prop_params = prop_theta;
+        prop_params(scale_param) = exp(prop_params(scale_param));
     
-    % Convert scaling parameters back into true values for simulation
-    prop_params = prop_theta;
-    prop_params(scale_param) = exp(prop_params(scale_param));
-        
-    % Calculate the associated model output, and discrepancy
-    prop_output = f_simulate(prop_params);
-    prop_summaries = f_summaries(prop_output);
-    prop_D = f_discrep(prop_summaries);
+        % Calculate the associated model output, and discrepancy
+        prop_output = f_simulate(prop_params);
+        prop_summaries = f_summaries(prop_output);
+        prop_D = f_discrep(prop_summaries);
     
-    % Now accept this move if it still satisfies the current discrepancy
-    % constraint (ratio of jumping distribution probabilities is one)
-    if prop_D <= target_D
+        % Now accept this move if it still satisfies the current discrepancy
+        % constraint (ratio of jumping distribution probabilities is one)
+        if prop_D <= target_D
         
-        % Update all values for this particle
-        theta = prop_theta;
-        output = prop_output;
-        D = prop_D;
-        summaries = prop_summaries;
+            % Update all values for this particle
+            theta = prop_theta;
+            output = prop_output;
+            D = prop_D;
+            summaries = prop_summaries;
         
-        % Switch 'moved' flag to true
-        moved = 1;
-        
+            % Switch 'moved' flag to true
+            moved = 1;
+            
+        end
     end
     
 end

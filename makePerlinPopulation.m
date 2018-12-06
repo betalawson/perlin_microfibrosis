@@ -8,7 +8,7 @@ function makePerlinPopulation(filename)
 pixel_width = 1/136;      % (mm)
 
 % Specify the number of particles to use for ABC-SMC
-N_parts = 500;
+N_parts = 250;
 
 % Specify whether to match a histological pattern, or to match to a set of provided "true" parameter values
 match_histo = 1;
@@ -28,8 +28,10 @@ density = 0.2;
 
 % Define the prior for ABC-SMC. Mins and maxs are the ranges of prior,
 % scale_param selects between uniform and logarithmic prior
-params_mins = [ 0, 0.1, 0, 0.1, 0, 1, 1/2, -pi/2 ];
-params_maxs = [ 1, 2, 0.5, 2, 1, 8, 50, pi/2 ];
+% params_mins = [ 0, 0.1, 0, 0.1, 0, 1, 1/2, -pi/2 ];
+% params_maxs = [ 1, 2, 0.5, 2, 1, 8, 50, pi/2 ];
+params_mins = [ 0, 0.3, 0, 0.01, 0, 1, 1/2, -pi/2 ];
+params_maxs = [ 0.4, 2, 0.5, 2, 0.99, 8, 50, pi/2 ];
 scale_param = logical([ 0, 0, 0, 0, 0, 0, 1, 0]);
 
 % Parameters to match when using ABC-SMC to re-match a provided pattern

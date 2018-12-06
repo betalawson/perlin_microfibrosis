@@ -105,7 +105,7 @@ visualiseEllipses;
         % consistent axes. The major axis length of the largest (containing
         % most power of spectrum) ellipse is used to define the length of
         % these axes.
-        max_major = max( [target_ellipses(8); plot_ellipses(1:N_vis,8)] );
+        max_major = max( [target_ellipses(end-1); plot_ellipses(1:N_vis,end-1)] );
         ax_start = -max_major * 0.6;
         ax_end = max_major * 0.6;
         

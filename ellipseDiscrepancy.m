@@ -18,20 +18,23 @@ function D = ellipseDiscrepancy(metrics, target_metrics, invC)
 %
 % D:               discrepancies for each pattern
 
-% Calculate the scaling factors for the angles based on the different
-% eccentricities
-angle_scalings = abs( log(  [ target_metrics(2) / target_metrics(3), target_metrics(5) / target_metrics(6), target_metrics(8) / target_metrics(9) ] ) );
-
-% Calculate the base distances between the metrics
+% First, calculate the base distances between the metrics
 dM = metrics - target_metrics;
 
-% Apply the periodic nature of angle metric
-for k = [1,4,7]   % angle metrics are 1st, 4th, 7th
+% The metrics vectors are of length (3 x <number of ellipses>)
+% Because angle metrics have special handling, a loop is used to modify all
+% of these. Structure is   < orientation, major_axis_length, minor_axis_length >
+for k = 1:3:length(target_metrics)
+    
+    % Angles are periodic, so take this into account when calculating the
+    % distances between angles
     dM(:,k) = angle_dists( metrics(:,k), target_metrics(k) );
-end
+    
+    % Use the eccentricities of ellipses in the target pattern as scaling 
+    % factors for the discrepancies in angle metrics
+    dM(k)  = dM(k) * abs( log( target_metrics(k+1) / target_metrics(k+2) ) );
 
-% Scale the angle metrics
-dM([1, 4, 7]) = dM([1, 4, 7]) .* angle_scalings;
+end
 
 % If an (inverse) covariance matrix has been supplied, calculate the
 % distance using Mahalanobis distance, otherwise use Euclidean

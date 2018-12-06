@@ -1,4 +1,4 @@
-function metrics = ellipseMetrics(pattern)
+function metrics = ellipseMetrics(pattern, power_thresholds)
 % This function calculates a set of metrics for a provided pattern that
 % quantify the relative positioning of features via the power spectrum.
 % Smoothing is applied to the power spectrum, which in almost all cases
@@ -10,14 +10,13 @@ function metrics = ellipseMetrics(pattern)
 %
 % pattern:   the pattern for which metrics are to be calculated
 %
+% power_thresholds:   list of threshold values for %power in total spectrum
+%
 % metrics:   a (row) vector of the nine metrics relating to the three
 %            ellipses
 
-
-% Define the three proportions of power that form the metric ellipses
-power_thresh1 = 0.1;
-power_thresh2 = 0.5;
-power_thresh3 = 0.8;
+% Read out number of thresholds supplied
+N_thresholds = length(power_thresholds);
 
 % Calculate the power spectrum of the (mean-subtracted) pattern
 P = abs(fftshift(fft2(pattern - mean(mean(pattern))))).^2;
@@ -33,24 +32,24 @@ P_tot = sum(sum(S));
 Ss = sort(S(:),'descend');
 Sss = cumsum(Ss);
 
-% Find the cutoff power values for the requested levels
-thresh_1 = Ss(find(Sss > power_thresh1 * P_tot, 1));
-thresh_2 = Ss(find(Sss > power_thresh2 * P_tot, 1));
-thresh_3 = Ss(find(Sss > power_thresh3 * P_tot, 1));
-
-% Determine binary masks that denote which locations do fall within these
-% thresholds
-mask_1 = zeros(size(S));
-mask_2 = zeros(size(S));
-mask_3 = zeros(size(S));
-mask_1(S > thresh_1) = 1;
-mask_2(S > thresh_2) = 1;
-mask_3(S > thresh_3) = 1;
-
-% Calculate the properties of the ellipses for these shapes
-E1 = regionprops(mask_1, 'Orientation', 'MajorAxisLength', 'MinorAxisLength', 'Centroid');
-E2 = regionprops(mask_2, 'Orientation', 'MajorAxisLength', 'MinorAxisLength', 'Centroid');
-E3 = regionprops(mask_3, 'Orientation', 'MajorAxisLength', 'MinorAxisLength', 'Centroid');
-
-% Store these values in one big long vector
-metrics = [E1.Orientation, E1.MajorAxisLength, E1.MinorAxisLength, E2.Orientation, E2.MajorAxisLength, E2.MinorAxisLength, E3.Orientation, E3.MajorAxisLength, E3.MinorAxisLength];
+% Loop over thresholds supplied, creating a mask for each, and then using
+% this to calculate ellipse properties that become the metrics
+metrics = [];
+for k = 1:N_thresholds
+    
+    % Find the threshold power value that defines cutoff for top X% of
+    % power
+    pow_thresh = Ss(find(Sss > power_thresholds(k) * P_tot, 1));
+    
+    % Create a binary mask denoting which locations do fall within this
+    % threshold
+    mask = zeros(size(S));
+    mask(S > pow_thresh) = 1;
+    
+    % Find properties of the best-fit ellipse for this mask
+    E_props = regionprops(mask, 'Orientation', 'MajorAxisLength', 'MinorAxisLength', 'Centroid');
+    
+    % Append these properties to the metrics vector
+    metrics = [metrics, E_props.Orientation, E_props.MajorAxisLength, E_props.MinorAxisLength];
+    
+end
