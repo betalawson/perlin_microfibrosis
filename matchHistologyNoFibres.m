@@ -136,7 +136,7 @@ if options_supplied
     
 end
 
-filename
+filename = [filename,'_NoFibres'];
 
 % Save the particles
 save([filename,'.mat'],'particles');
