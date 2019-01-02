@@ -1,4 +1,4 @@
-function [presence, S, P_f, P_p] = createFibroPattern(mesh, density, params, Ps, offsets)
+function [presence, S, P_f, P_p] = createFibroPatternTrial(mesh, density, params, Ps, offsets)
 
 % This function takes a list of points and a set of parameters (listed 
 % below), and creates a pattern of fibrosis accordingly.
@@ -46,16 +46,16 @@ end
 %%% SINUSOIDAL NOISE FOR FIBROUS PATTERNS
 
 % Define parameters for the phase field (decided via experimentation)
-phasefield_featuresize = 3;
-phasefield_anisotropy = 8;
-phasefield_strength = 8;
+n_fibres_similarity = 4;
+wiggle_feature_length = 4;
+phasefield_strength = 5;
 
 % Create an octave noise field with these properties (first transform
 % points, then call Octave2D)
-phasefield_points = [ R_points(1,:) / sqrt(phasefield_anisotropy); R_points(2,:) * sqrt(phasefield_anisotropy) ];      % Scale dimensions according to anisotropy (multiplication by "D" in paper)
-phasefield_points = phasefield_points / phasefield_featuresize;                                                                % Attain base featuersize for this noisefield (appliation of 1/d factor in paper)
-phasefield = Octave2D(phasefield_points, 3, 0.4, Ps, offsets);    % (3 octaves, low roughness for phasefield)
-
+%phasefield_points = [ R_points(1,:) / sqrt(phasefield_anisotropy); R_points(2,:) * sqrt(phasefield_anisotropy) ];      % Scale dimensions according to anisotropy (multiplication by "D" in paper)
+%phasefield_points = phasefield_points / phasefield_featuresize;                                                                % Attain base featuersize for this noisefield (appliation of 1/d factor in paper)
+phasefield_points = [ R_points(1,:) / wiggle_feature_length; R_points(2,:) / (n_fibres_similarity * fibre_sep) ];      % Scale dimensions according to anisotropy (multiplication by "D" in paper)
+phasefield = Octave2D(phasefield_points, 4, 0.5, Ps, offsets);    % (4 octaves, low roughness for phasefield)
 % Create the sinusoidal pattern using cos(RX^T [0; 1] ), then modulate phase using
 % the created phasefield
 S = 0.5 + 0.5 * cos(2*pi * (R_points(2,:) / fibre_sep + phasefield_strength * (phasefield - 0.5) ) );
@@ -76,7 +76,7 @@ P_f = Octave2D( P_f_points / feature_size, 4, roughness, Ps2, offsets);
 %%% CREATE A LARGE-SCALE PERLIN NOISE PATTERN FOR DENSITY VARIATION
 
 % Use Octave2D with scaling of point co-ords to attain desired patch_size
-P_p = Octave2D(mesh.points' / patch_size, 3, 0.5, Ps3, offsets);
+P_p = Octave2D(mesh.points' / patch_size, 4, 0.5, Ps3, offsets);
 
 
 
