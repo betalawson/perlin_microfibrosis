@@ -2,16 +2,27 @@
 function plotEllipses(ellipse_properties)
 
 % Define colours to plot the three ellipses
+% colours = [    
+%     [0.85, 0, 0];            % Dark red
+%     [1, 0.5, 0.5];           % Pink
+%     [0.5, 0.5, 1];           % Light blue
+%     [0, 0, 0.85];            % Dark blue
+%     [0, 0, 0];               % Black
+%     [0.3, 0.3, 0.3];         % Dark grey
+%     [0.75, 0.75, 0.75];      % Light grey
+%     [0.6, 0.6, 0.3];         % Dark olive
+%     [0.9, 0.9, 0.6];         % Light olive
+%     ];
 colours = [    
     [0.85, 0, 0];            % Dark red
-    [1, 0.5, 0.5];           % Pink
-    [0.5, 0.5, 1];           % Light blue
+    [0.9, 0.25, 0.25];       % Moderate-dark red
+    [0.95, 0.5, 0.5];        % Moderate red
+    [1, 0.75, 0.75];         % Light red
+    [0.85, 0.75, 0.85];      % Light purple
+    [0.75, 0.75, 1];         % Light blue
+    [0.5, 0.5, 0.95];        % Moderate blue
+    [0.25, 0.25, 0.9];       % Moderate-dark blue
     [0, 0, 0.85];            % Dark blue
-    [0, 0, 0];               % Black
-    [0.3, 0.3, 0.3];         % Dark grey
-    [0.75, 0.75, 0.75];      % Light grey
-    [0.6, 0.6, 0.3];         % Dark olive
-    [0.9, 0.9, 0.6];         % Light olive
     ];
 
 % Convert the vector of all ellipse properties into separate

@@ -1,4 +1,4 @@
-function [presence, S, P_f, P_p] = createFibroPatternTrial(mesh, density, params, Ps, offsets)
+function [presence, S, P_f, P_p] = createFibroPattern(mesh, density, params, Ps, offsets)
 
 % This function takes a list of points and a set of parameters (listed 
 % below), and creates a pattern of fibrosis accordingly.
