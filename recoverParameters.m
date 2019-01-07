@@ -1,4 +1,4 @@
-function recoverParameters(N_parts, ellipse_mode, visualise, options)
+function recoverParameters(target_params, params_name, N_parts, ellipse_mode, visualise, options)
 % This function creates a population of Perlin noise-derived patterns that
 % all fall within a sufficient degree of similarity to a generated pattern,
 % using the set of parameters defined within this .m file. Inputs specify
@@ -6,6 +6,12 @@ function recoverParameters(N_parts, ellipse_mode, visualise, options)
 % and further options.
 %
 % INPUTS:
+%
+% target_params:  The parameters to attempt to match to. Format is:
+%                 [fibreness, fibre separation, patchiness, feature size, 
+%                  roughness, patch size, alignment ratio, direction]
+%
+% params_name:    A name for the parameter set (used to set filename)
 %
 % N_parts:        Number of particles to use in the SMC-ABC method
 %
@@ -18,12 +24,6 @@ function recoverParameters(N_parts, ellipse_mode, visualise, options)
 %
 % (options):      Options for the SMC-ABC algorithm (see SMC-ABC code for
 %                 definitions and default values)
-%
-% PARAMETERS ARE MATCHED TO THE target_params VECTOR DEFINED IN THIS FILE
-
-% Define the set of target parameters to try to match to.
-% Parameters are:   [fibreness, fibre separation, patchiness, feature size, roughness, patch size, alignment ratio, direction]
-target_params = [0.15, 0.75, 0.2, 0.7, 0.65, 3, 2.5, -pi/3 ];
 
 % Specify the density of fibrosis in the target pattern
 target_density = 0.20;
@@ -38,7 +38,7 @@ scale_param = logical([ 0, 0, 0, 0, 0, 0, 1, 0]);
 
 
 %%% CHECK IF OPTIONS SUPPLIED
-if nargin > 4
+if nargin > 5
     options_supplied = 1;
 else
     options_supplied = 0;
@@ -95,8 +95,9 @@ particles.vals = part_vals(I);
 particles.metrics = part_metrics(I,:);
 particles.Ds = part_Ds(I);
 
-% Set up a filename according to options supplied
-filename = [histo_pattern, num2str(N_parts),'_', ellipse_mode];
+% A name for the parameter set is provided by the user, because there's no
+% longer a convenient set of names (like there is in the histology case)
+filename = [params_name, num2str(N_parts),'_', ellipse_mode];
 
 % Append options to filename if supplied
 if options_supplied
