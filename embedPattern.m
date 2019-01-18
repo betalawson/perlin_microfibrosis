@@ -1,4 +1,4 @@
-function fibmesh = embedPattern(pattern)
+function [fibmesh, seed_locs, mask, place_box] = embedPattern(pattern)
 % This function takes a fibrotic pattern and embeds it into a larger region
 % of non-fibrotic tissue, with a region-growing algorithm used to create a
 % less rigidly rectangular shape in which the pattern is placed. The
@@ -14,16 +14,18 @@ base_seed_spacing = 25;
 % Read out the dimensions of the pattern
 [Py,Px] = size(pattern);
 
-% Use these to automatically calculate the size of the full mesh
-Nx = round( Px * (3/2 + 1 + 1) );      % 3/2 the vertical size on the stimulus side, same width as pattern on the far side
-Ny = round( Py * (5/16 + 1 + 5/16) );  % 5/16 the vertical size of the pattern for the top and bottom margins
+% Specify the full size of the mesh in which the pattern is to be embedded
+% (done this way because Chaste slows way down if certain sizes are
+% exceeded)
+Nx = 650;
+Ny = 500;
 
 % Initialise the pattern
 fibmesh = zeros(Ny, Nx);
 
 % Define where the pattern placement 'box' starts and ends
-box_start_x = round(3/2*Px);
-box_start_y = round(5/16*Py);
+box_start_x = round((Nx - Px) * 4.5 / 10);
+box_start_y = round((Ny - Py) / 2);
 
 % Use the region-growing algorithm to create a rougher shape than a pure
 % rectangle in which to place the pattern
@@ -59,9 +61,13 @@ seed_locs = [X(:) Y(:)];
 % Now run the region-growing algorithm to create a mask in which the
 % pattern is placed
 mask = regionGrower(Nx, Ny, seed_locs, 0.85 * Px * Py, 0);
+mask = logical(mask);
 
 % Paste the pattern into the placement box
-fibmesh(box_start_y:box_start_y+Py-1, box_start_x:box_start_x+Px-1) = pattern;
+place_box = zeros(Ny, Nx);
+place_box(box_start_y:box_start_y+Py-1, box_start_x:box_start_x+Px-1) = 1;
+place_box = logical(place_box);
+fibmesh(place_box) = pattern;
 
 % Apply the mask to destroy the perfect rectangular shape
 fibmesh = fibmesh .* mask;

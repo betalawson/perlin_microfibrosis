@@ -4,9 +4,6 @@ function examineResults(filename)
 % relevant information associated with those results is read directly from
 % the filename
 
-% Build mesh
-mesh = buildMesh(250, 400, 1/136);
-
 % Define parameter ranges - assumes by default
 if regexp(filename,'\w*nofibres\w*')
     params_mins = [ 0, 0.01, 0, 1, log(1/2), -pi/2 ];
@@ -31,6 +28,20 @@ elseif regexp(filename,'\w*diffuse\w*')
     pattern = patterns{3};
 elseif regexp(filename,'\w*patchy\w*')
     pattern = patterns{4};
+elseif regexp(filename,'\w*params\w*')
+    load('fibro_seedinfo.mat','permute_tables','offset_tables');
+    nameloc = regexp(filename,'\w*params\w*');
+    target_density = 0.2;
+    points = buildMesh(500,500,1/136);
+    switch filename(nameloc+6)     % Reads out character after 'params'
+        case '1'
+            target_params = [0.15, 0.75, 0.2, 0.7, 0.65, 3, 2.5, -pi/3];
+        case '2'
+            target_params = [0, 0.75, 0.4, 1.1, 0.9, 3, 3, pi/6];
+        case '3'
+            target_params = [0.36, 1.1, 0.05, 0.1, 0.3, 5, 1.2, pi/4];
+    end
+    pattern = createFibroPattern(points, target_density, target_params, permute_tables{1}, offset_tables{1});  
 else
     error('Failed to read out pattern. Check filename for a pattern name.');
 end

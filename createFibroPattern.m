@@ -46,9 +46,9 @@ end
 %%% SINUSOIDAL NOISE FOR FIBROUS PATTERNS
 
 % Define parameters for the phase field (decided via experimentation)
-n_fibres_similarity = 4;
-wiggle_feature_length = 4;
-phasefield_strength = 5;
+n_fibres_similarity = 0.8;
+wiggle_feature_length = 0.8;
+phasefield_strength = 1;
 
 % Create an octave noise field with these properties (first transform
 % points, then call Octave2D)

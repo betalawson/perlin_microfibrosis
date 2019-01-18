@@ -47,8 +47,13 @@ stim_Y = Ly * stim_Y;
 % Also convert the stimulus radius to cm
 stim_rad = stim_rad * 0.1;
 
+% The fibrosis map is flipped, because fibrosis maps are images (with (0,0)
+% in top left), which then get put into  traditional (x,y) space for space 
+% (with (0,0) in bottom left)
+fibmap = flipud(fibmap);
+
 % Create a list of blocked sites. Because the (:) operator works
-% columnwise, a transpose is used
+% columnwise, a transpose is used. 
 blocklist = fibmap'; blocklist = logical(blocklist(:));
 
 % Now populate the problem domain with points
