@@ -104,12 +104,11 @@ else
     [part_thetas, part_vals, part_metrics, part_Ds] = performABCSMC_Fibro(N_parts, f_simulate, f_summaries, f_discrepancy, target_pattern, params_mins, params_maxs, scale_param, 1e-2, visualise, f_visualise);
 end
 
-% (TO CHANGE TO MORE BAYESIAN INTERPRETATION)
-% Save only the unique particles
-[particles.thetas, I] = unique(part_thetas, 'rows');
-particles.vals = part_vals(I);
-particles.metrics = part_metrics(I,:);
-particles.Ds = part_Ds(I);
+% Save data to a struct
+particles.thetas = part_thetas;
+particles.vals = part_vals;
+particles.metrics = part_metrics;
+particles.Ds = part_Ds;
 
 % Set up a filename according to options supplied
 filename = [histo_pattern, num2str(N_parts),'_', ellipse_mode];

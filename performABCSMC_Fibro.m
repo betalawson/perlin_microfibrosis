@@ -193,6 +193,14 @@ load('fibro_seedinfo.mat','permute_tables', 'offset_tables');
 % Count number of seeds created
 N_seeds = length(permute_tables);
 
+% Set up the simulators for each particle (each has its own seed, at least
+% up to the provided number of seeds). This is done outside of parfor for
+% safety
+for k = 1:N_parts
+    seed_num = mod(k, N_seeds) + 1;   % Loops if the number of particles exceeds the number of provided seeds
+    part_simulators{k} = @(params) f_simulate(params, permute_tables{seed_num}, offset_tables{seed_num});
+end
+
 % Generate the seed information for each particle, then simulate the model
 % using this seed information, storing both its output and the associated
 % summary statistics
@@ -457,11 +465,17 @@ end
 
 % Now fit a Gaussian mixture model to the normal-transformed particle
 % locations
-try 
-    GMModel = fitgmdist(Z,3,'RegularizationValue',0.01,'Replicates',5,'Options',optimset('MaxIter',1000));
-catch
-    fprintf('ERROR: Gaussian mixture model fitting has failed! Entering debug mode. \n');
-    keyboard
+GMM_success = 0;
+regularisation_value = 0.01;
+while ~GMM_success
+    GMM_success = 1;
+    try 
+        GMModel = fitgmdist(Z,3,'RegularizationValue',0.01,'Replicates',5,'Options',optimset('MaxIter',1000));
+    catch
+        regularisation_value = regularisation_value * 10;
+        fprintf('WARNING: Gaussian mixture model fitting has failed! Increasing regularization to %g \n', regularisation_value);
+        GMM_success = 0;
+    end
 end
 
 % Calculate the log probabilities of each particle according to this
@@ -490,7 +504,7 @@ f = sum( log( theta(1) * betapdf( x, theta(2), theta(3)) + (1-theta(1)) * betapd
 end
 
 
-function [theta, output, summaries, D, moved] = MVN_move(N_moves, theta, output, summaries, D, Ctheta, theta_mins, theta_maxs, scale_param, target_D, f_simulate, f_summaries, f_discrep)
+function [theta, output, summaries, D, moved] = MVN_move(N_moves, theta, output, summaries, D, Ctheta, theta_mins, theta_maxs, scale_param, target_D, f_simulator, f_summaries, f_discrep)
 % This function performs MCMC updates ('move steps' or 'mutations') for a
 % single particle, using a multivariate normal jumping distribution
 
@@ -513,7 +527,7 @@ for k = 1:N_moves
         prop_params(scale_param) = exp(prop_params(scale_param));
     
         % Calculate the associated model output, and discrepancy
-        prop_output = f_simulate(prop_params);
+        prop_output = f_simulator(prop_params);
         prop_summaries = f_summaries(prop_output);
         prop_D = f_discrep(prop_summaries);
     
@@ -540,7 +554,7 @@ end
 
 
 
-function [theta, output, summaries, D, logQ, moved] = GMM_move(N_moves, J, theta, output, summaries, D, logQ, N_theta, theta_mins, theta_maxs, scale_param, target_D, Bmix_fit, f_simulate, f_summaries, f_discrep)
+function [theta, output, summaries, D, logQ, moved] = GMM_move(N_moves, J, theta, output, summaries, D, logQ, N_theta, theta_mins, theta_maxs, scale_param, target_D, Bmix_fit, f_simulator, f_summaries, f_discrep)
 % This function performs MCMC updates ('move steps' or 'mutations') for a
 % single particle, using a Gaussian mixture model jumping distribution
 % (previously found using function fitGMM and supplied to this function as
@@ -598,7 +612,7 @@ for k = 1:N_moves
         prop_params(scale_param) = exp(prop_params(scale_param));
                 
         % Calculate the associated model output, and discrepancy
-        prop_output = f_simulate(prop_params);
+        prop_output = f_simulator(prop_params);
         prop_summaries = f_summaries(prop_output);
         prop_D = f_discrep(prop_summaries);
         
