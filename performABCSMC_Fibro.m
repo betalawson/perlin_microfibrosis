@@ -193,13 +193,10 @@ load('fibro_seedinfo.mat','permute_tables', 'offset_tables');
 % Count number of seeds created
 N_seeds = length(permute_tables);
 
-% Set up the simulators for each particle (each has its own seed, at least
-% up to the provided number of seeds). This is done outside of parfor for
-% safety
-for k = 1:N_parts
-    seed_num = mod(k, N_seeds) + 1;   % Loops if the number of particles exceeds the number of provided seeds
-    part_simulators{k} = @(params) f_simulate(params, permute_tables{seed_num}, offset_tables{seed_num});
-end
+% Set up the parallel pool (for successful use on HPC)
+quthpc = parcluster('local');
+quthpc.JobStorageLocation=getenv('TMPDIR');
+parpool(quthpc);
 
 % Generate the seed information for each particle, then simulate the model
 % using this seed information, storing both its output and the associated
@@ -411,6 +408,9 @@ while looping
     end
     
 end
+
+% Close the parallel pool now that it's use is finished
+delete(gcp);
 
 end
 
