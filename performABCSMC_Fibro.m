@@ -193,9 +193,8 @@ load('fibro_seedinfo.mat','permute_tables', 'offset_tables');
 % Count number of seeds created
 N_seeds = length(permute_tables);
 
-% Set up the parallel pool (for successful use on HPC)
+% Set up the parallel pool
 quthpc = parcluster('local');
-quthpc.JobStorageLocation=getenv('TMPDIR');
 parpool(quthpc);
 
 % Generate the seed information for each particle, then simulate the model
