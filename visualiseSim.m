@@ -1,11 +1,11 @@
-function visualiseSim(filename, meshfile, plot_mesh, save_anim)
+function visualiseSim(filename, meshfile, vis_mesh, save_anim)
 % This function visualises the simulation results contained in the full
 % data .h5 files produced by Chaste. The meshfile is also provided, so that
 % the underlying mesh can be visualised.
 
 % Load the results with the given filename - looks for simulations in a
 % /Simulations/ folder
-[data, t, ~] = load_results([pwd,'\Simulations\'], filename);
+[t, V, ~, ~, ~] = load_results([pwd,'\Simulations\'], filename);
 
 meshfile = [pwd,'\Meshfiles\',meshfile];
 
@@ -20,7 +20,7 @@ ymin = min(nodes(:,2)); ymax = max(nodes(:,2));
 
 % If plotting mesh information, read out this information from the element
 % and edge files
-if plot_mesh
+if vis_mesh
 
     % Read out element information from the .ele meshfile
     fileobj_ele = fopen([meshfile,'.ele']);
@@ -63,35 +63,36 @@ figure('units','normalized','OuterPosition',[0 0 1 1]);
 % Close open files (just avoiding fclose all for better compatibility
 % outside this code)
 fclose(fileobj_node);
-if plot_mesh
+if vis_mesh
     fclose(fileobj_ele);
     fclose(fileobj_edge);
 end
 
 % Loop over timesteps
-for i = 1:size(data,2)
+for i = 1:size(V,2)
     
     % Visualise data
     hold on;
     
-    % Visualise the elements and boundaries if requested
-    if plot_mesh
-    
-        % Visualise element triangles
-        patch(plot_tri_X', plot_tri_Y', 90);
-    
-        % Visualise boundaries
-        plot(plot_edges_X', plot_edges_Y', 'r', 'LineWidth', 1.5);
-        
-    end
-    
+   
     % Visualise the nodes themselves, colourised according to voltage value
-    scatter(nodes(:,1), nodes(:,2), 5, data(:,i), 'filled');
+    scatter(nodes(:,1), nodes(:,2), 5, V(:,i), 'filled');
     caxis([-100 20]);
     axis equal;
     xlim([xmin xmax]);
     ylim([ymin ymax]);
     %colormap(fibro_colormap);
+    
+    % Visualise the elements and boundaries if requested
+    if vis_mesh
+    
+        % Visualise element triangles
+        %patch(plot_tri_X', plot_tri_Y', 90);
+    
+        % Visualise boundaries
+        plot(plot_edges_X', plot_edges_Y', 'r', 'LineWidth', 1.5);
+        
+    end
     
     title(['Time t = ',num2str(t(i)),'ms']);
     
@@ -104,7 +105,7 @@ for i = 1:size(data,2)
     end
     
     % Clear the image because we're using hold on, except final frame
-    if i ~= size(data,2)
+    if i ~= size(V,2)
         cla; clf;
     end
     
@@ -113,54 +114,4 @@ end
 % Close video object if one was created
 if save_anim
     close(Vidobj);
-end
-
-
-
-
-
-function [data, t, nodemap] = load_results(path, filename)
-% This funtion handles the actual reading of the h5 files and the
-% re-ordering of nodes.
-
-% Filename assumed to be default if not provided
-if nargin == 1
-    filename = 'results';
-end
-
-% Define the paths to the .h5 file and .txt permutation file
-h5path = fullfile(path, [filename,'.h5']);
-ppath = fullfile(path, [filename,'.txt']);
-
-% Read out the timepoints and the voltage data
-data = squeeze(h5read(h5path, '/Data'));
-t = h5read(h5path, '/Data_Unlimited');
-
-% Initialise default nodemap
-nodemap = (1:size(data, 1))-1;
-
-% Update nodemap if provided in h5 file
-if ~h5readatt(h5path, '/Data', 'IsDataComplete')
-    nodemap = h5readatt(h5path, '/Data', 'NodeMap');
-end
-
-% If a permutation .txt file has been provided, use it to re-order the data
-if exist(ppath, 'file')
-    
-    % Open file and read out the permutation data
-    file_obj=fopen(ppath);
-    perm=cell2mat(textscan(file_obj,'','headerlines',1,'delimiter',' ','collectoutput',1));
-    fclose(file_obj);
-    
-    % Apply re-ordering, according to whether nodemap was found or not
-    if ~isempty(nodemap)
-        iperm = zeros(size(perm, 1), 1);
-        iperm(perm(:, 2)+1) = 1:length(iperm);
-        nodemap = iperm(nodemap+1)-1;
-        [nodemap, k] = sort(nodemap);
-        data = data(k, :);
-    else
-        data = data(perm(:, 2)+1, :);
-    end
-    
 end

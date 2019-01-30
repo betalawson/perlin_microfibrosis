@@ -1,4 +1,4 @@
-function [presence, S, P_f, P_p] = createFibroPattern(mesh, density, params, Ps, offsets)
+function [presence, O_b, O_d, F] = createFibroPattern(mesh, density, params, Ps, offsets)
 
 % This function takes a list of points and a set of parameters (listed 
 % below), and creates a pattern of fibrosis accordingly.
@@ -15,9 +15,9 @@ function [presence, S, P_f, P_p] = createFibroPattern(mesh, density, params, Ps,
 %           this function, and n is the number of 
 %
 % OUTPUTS:  presence:  a presence/absence map of fibrosis
-%           (S):       the sinusoidal field used for fibre-type patterns (optional)
-%           (Pf):      the Perlin noise field for fibrosis (optional)
-%           (Pp):      the Perlin noise field for density variation (optional)
+%           (O_b):      the Perlin noise field for fibrosis (optional)
+%           (O_d):      the Perlin noise field for density variation (optional)
+%           (F):       the sinusoidal field used for fibre-type patterns (optional)
 %
 % PARAMS:   Parameters are provided as a single vector, for ease of
 %           interface with other code.
@@ -52,37 +52,37 @@ phasefield_strength = 5;
 
 % Create an octave noise field with these properties (first transform
 % points, then call Octave2D)
-%phasefield_points = [ R_points(1,:) / sqrt(phasefield_anisotropy); R_points(2,:) * sqrt(phasefield_anisotropy) ];      % Scale dimensions according to anisotropy (multiplication by "D" in paper)
-%phasefield_points = phasefield_points / phasefield_featuresize;                                                                % Attain base featuersize for this noisefield (appliation of 1/d factor in paper)
 phasefield_points = [ R_points(1,:) / wiggle_feature_length; R_points(2,:) / (n_fibres_similarity * fibre_sep) ];      % Scale dimensions according to anisotropy (multiplication by "D" in paper)
 phasefield = Octave2D(phasefield_points, 4, 0.5, Ps, offsets);    % (4 octaves, low roughness for phasefield)
 % Create the sinusoidal pattern using cos(RX^T [0; 1] ), then modulate phase using
 % the created phasefield
-S = 0.5 + 0.5 * cos(2*pi * (R_points(2,:) / fibre_sep + phasefield_strength * (phasefield - 0.5) ) );
+F = 0.5 + 0.5 * cos(2*pi * (R_points(2,:) / fibre_sep + phasefield_strength * (phasefield - 0.5) ) );
 
-% Sharpen this field by powering it up many times
-S = S .* S .* S .* S .* S .* S .* S .* S .* S .* S .* S .* S .* S .* S .* S;
-
+% Sharpen this field by powering it up many times (hard-coded for
+% efficiency, but can be easily modified if a different 'sharpening factor'
+% is desired). Repeated multiplication is much more efficient than the .^
+% operator, and so the operation of taking the 15th exponent is written out
+% the long way.
+F = F .* F .* F .* F .* F .* F .* F .* F .* F .* F .* F .* F .* F .* F .* F;
 
 
 %%% CREATE THE MAIN FIBROSIS DEPOSIT EFFECT
 
 % Transform points according to input parameters, then call Octave2D
 P_f_points = [ R_points(1,:) / sqrt(fibre_alignment); R_points(2,:) * sqrt(fibre_alignment) ];
-P_f = Octave2D( P_f_points / feature_size, 4, roughness, Ps2, offsets);
+O_b = Octave2D( P_f_points / feature_size, 4, roughness, Ps2, offsets);
 
 
 
 %%% CREATE A LARGE-SCALE PERLIN NOISE PATTERN FOR DENSITY VARIATION
 
 % Use Octave2D with scaling of point co-ords to attain desired patch_size
-P_p = Octave2D(mesh.points' / patch_size, 4, 0.5, Ps3, offsets);
+O_d = Octave2D(mesh.points' / patch_size, 4, 0.5, Ps3, offsets);
 
 
 
 %%% TAKE A COMBINATION OF THESE NOISEFIELDS TO GET THE FINAL PATTERN
-%noise = (1 - patchiness) * ( fibreness * S + (1 - fibreness) * P_f ) + patchiness * P_p;
-noise = ( 1 - fibreness + fibreness * S ) .* P_f + patchiness * P_p;
+noise = ( 1 - fibreness + fibreness * F ) .* O_b + patchiness * O_d;
 
 %%% THRESHOLD THIS NOISE TO GET PRESENCE/ABSENCE OF REQUESTED DENSITY
 presence = thresholdPattern(noise, density);
@@ -90,9 +90,17 @@ presence = thresholdPattern(noise, density);
 
 %%% CONVERT BACK TO MATRICES
 presence = reshape(presence', mesh.Nx, mesh.Ny)';
-S = reshape(S', mesh.Nx, mesh.Ny)';
-P_f = reshape(P_f', mesh.Nx, mesh.Ny)';
-P_p = reshape(P_p', mesh.Nx, mesh.Ny)';
+F = reshape(F', mesh.Nx, mesh.Ny)';
+O_b = reshape(O_b', mesh.Nx, mesh.Ny)';
+O_d = reshape(O_d', mesh.Nx, mesh.Ny)';
+
+
+%%% FLIP TO CONVERT BACK TO IMAGES (starting at top left instead of bottom
+%%% left)
+presence = flipud(presence);
+F = flipud(F);
+O_b = flipud(O_b);
+O_d = flipud(O_d);
 
 end
 

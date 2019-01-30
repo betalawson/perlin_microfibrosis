@@ -1,4 +1,4 @@
-function [presence, P_f, P_p] = createFibroPatternNoFibres(mesh, density, params, Ps, offsets)
+function [presence, O_b, O_d] = createFibroPatternNoFibres(mesh, density, params, Ps, offsets)
 
 % This function takes a list of points and a set of parameters (listed 
 % below), and creates a pattern of fibrosis accordingly.
@@ -46,19 +46,19 @@ end
 
 % Transform points according to input parameters, then call Octave2D
 P_f_points = [ R_points(1,:) / sqrt(fibre_alignment); R_points(2,:) * sqrt(fibre_alignment) ];
-P_f = Octave2D( P_f_points / feature_size, 4, roughness, Ps, offsets);
+O_b = Octave2D( P_f_points / feature_size, 4, roughness, Ps, offsets);
 
 
 
 %%% CREATE A LARGE-SCALE PERLIN NOISE PATTERN FOR DENSITY VARIATION
 
 % Use Octave2D with scaling of point co-ords to attain desired patch_size
-P_p = Octave2D(mesh.points' / patch_size, 3, 0.5, Ps2, offsets);
+O_d = Octave2D(mesh.points' / patch_size, 3, 0.5, Ps2, offsets);
 
 
 
 %%% TAKE A COMBINATION OF THESE NOISEFIELDS TO GET THE FINAL PATTERN
-noise = P_f + patchiness * P_p;
+noise = O_b + patchiness * O_d;
 
 %%% THRESHOLD THIS NOISE TO GET PRESENCE/ABSENCE OF REQUESTED DENSITY
 presence = thresholdPattern(noise, density);
@@ -66,8 +66,13 @@ presence = thresholdPattern(noise, density);
 
 %%% CONVERT BACK TO MATRICES
 presence = reshape(presence', mesh.Nx, mesh.Ny)';
-P_f = reshape(P_f', mesh.Nx, mesh.Ny)';
-P_p = reshape(P_p', mesh.Nx, mesh.Ny)';
+O_b = reshape(O_b', mesh.Nx, mesh.Ny)';
+O_d = reshape(O_d', mesh.Nx, mesh.Ny)';
+
+%%% FLIP TO CONVERT BACK TO IMAGES (starting at top left instead of bottom
+%%% left)
+presence = flipud(presence);
+O_b = flipud(O_b);
+O_d = flipud(O_d);
 
 end
-
