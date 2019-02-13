@@ -120,4 +120,4 @@ if options_supplied
 end
 
 % Save the particles
-save([filename,'.mat'],'particles','-v7.3','-nocompression');
+save([filename,'.mat'],'particles','-v7.3');

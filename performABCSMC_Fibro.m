@@ -312,7 +312,7 @@ while looping
             
             % Perform one MCMC step to evaluate how many are expected to be
             % required
-            parfor k = 1:N_parts
+            parfor k = worst_keep+1:N_parts
                 [part_thetas(k,:), part_outputs{k}, part_summaries(k,:), part_Ds(k), accepted(k)] = MVN_move(1, part_thetas(k,:), part_outputs{k}, part_summaries(k,:), part_Ds(k), Ctheta, theta_mins, theta_maxs, scale_param, target_D, part_simulators{k}, f_summaries, f_discrep); 
             end
             
@@ -330,7 +330,7 @@ while looping
             R = min([R,max_MCMC_steps]);
             
             % Perform the remaining MCMC steps
-            parfor k = 1:N_parts
+            parfor k = worst_keep+1:N_parts
                 [part_thetas(k,:), part_outputs{k}, part_summaries(k,:), part_Ds(k), accepted(k)] = MVN_move(R-1, part_thetas(k,:), part_outputs{k}, part_summaries(k,:), part_Ds(k), Ctheta, theta_mins, theta_maxs, scale_param, target_D, part_simulators{k}, f_summaries, f_discrep);
             end
             
@@ -346,7 +346,7 @@ while looping
             
             % Perform one MCMC step to evaluate how many are expected to be
             % required
-            parfor k = 1:N_parts
+            parfor k = worst_keep+1:N_parts
                 [part_thetas(k,:), part_outputs{k}, part_summaries(k,:), part_Ds(k), part_logQs(k), accepted(k)] = GMM_move(1, J, part_thetas(k,:), part_outputs{k}, part_summaries(k,:), part_Ds(k), part_logQs(k), N_theta, theta_mins, theta_maxs, scale_param, target_D, Bmix_fit, part_simulators{k}, f_summaries, f_discrep);
             end
             
@@ -364,7 +364,7 @@ while looping
             R = min([R,max_MCMC_steps]);
             
             % Perform the remaining MCMC steps
-            parfor k = 1:N_parts
+            parfor k = worst_keep+1:N_parts
                 [part_thetas(k,:), part_outputs{k}, part_summaries(k,:), part_Ds(k), part_logQs(k), accepted(k)] = GMM_move(R-1, J, part_thetas(k,:), part_outputs{k}, part_summaries(k,:), part_Ds(k), part_logQs(k), N_theta, theta_mins, theta_maxs, scale_param, target_D, Bmix_fit, part_simulators{k}, f_summaries, f_discrep);
             end
             

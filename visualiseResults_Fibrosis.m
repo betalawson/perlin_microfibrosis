@@ -6,8 +6,8 @@ function visualiseResults_Fibrosis(params, patterns, ellipses, discrepancies, ta
 %%% PARAMETER DEFINITION
 
 N_vis = 11;
-plot_type = 'best';           % 'best' - picks best particles in terms of discrepancy
-% 'random' - picks a random set of particles each time the function is called
+plot_type = 'random';           % 'best' - picks best particles in terms of discrepancy
+                                % 'random' - picks a random set of particles each time the function is called
 
 
 
@@ -34,6 +34,7 @@ switch plot_type
         R = randperm(N);
         plot_patterns = patterns(R(1:N_vis));
         plot_ellipses = ellipses(R(1:N_vis),:);
+        plot_discrepancies = discrepancies(R(1:N_vis));
         
     case 'best'      % Select the best N_vis patterns according to discrepancy
         

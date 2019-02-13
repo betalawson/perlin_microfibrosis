@@ -40,6 +40,8 @@ elseif regexp(filename,'\w*params\w*')
             target_params = [0, 0.75, 0.4, 1.1, 0.9, 3, 3, pi/6];
         case '3'
             target_params = [0.36, 1.1, 0.05, 0.1, 0.3, 5, 1.2, pi/4];
+        case '4'
+            target_params = [0.3, 0.5, 0.2, 1.8, 0.2, 4, 2, -pi/9];
     end
     pattern = createFibroPattern(points, target_density, target_params, permute_tables{1}, offset_tables{1});  
 else
