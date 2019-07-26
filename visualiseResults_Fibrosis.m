@@ -63,7 +63,7 @@ else
     parameter_names = {'Fibreness', 'Fibre Separation', 'Patchiness', 'Feature Size', 'Roughness', 'Patch Size', '(log) Anisotropy Ratio', 'Direction'};
 end
 % Call particle plotter
-visualiseParticles(params, params_mins, params_maxs, parameter_names);
+visualiseParticles(params, params_mins, params_maxs, parameter_names, discrepancies);
 
 
 %%% CALL PLOTTING SUBFUNCTIONS FOR PATTERNS AND ELLIPSES

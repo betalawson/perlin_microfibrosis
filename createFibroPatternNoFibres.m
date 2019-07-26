@@ -1,5 +1,4 @@
 function [presence, O_b, O_d] = createFibroPatternNoFibres(mesh, density, params, Ps, offsets)
-
 % This function takes a list of points and a set of parameters (listed 
 % below), and creates a pattern of fibrosis accordingly.
 %
@@ -35,8 +34,7 @@ params = num2cell(params);
 R_points = [ [ cos(direction) sin(direction) ]; [-sin(direction), cos(direction)] ] * mesh.points';
 
 
-% Create new permutation tables from the provided by applying it to itself,
-% and then again
+% Create new permutation tables from the provided by applying it to itself
 for k = 1:size(Ps,1)
     Ps2(k,:) = Ps(k,Ps(k,:)+1);
 end

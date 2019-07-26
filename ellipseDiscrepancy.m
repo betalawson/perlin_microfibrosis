@@ -47,7 +47,8 @@ end
 
 function dists = angle_dists(angles1, angle2)
 % This function calculates the distance between two angles, taking into
-% account the periodic nature of alignment angles
+% account the periodic nature of alignment angles (i.e. 89 degrees is two
+% degrees away from -89 degrees)
 
 % Store indices of angles where periodicity needs to be taken into account
 p = abs( angles1 - angle2 ) > 90;

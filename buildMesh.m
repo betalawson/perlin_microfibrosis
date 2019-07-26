@@ -1,4 +1,6 @@
 function mesh = buildMesh(Nx, Ny, pixel_width)
+% This function simply builds a basic struct that contains the mesh
+% information, to be used by the other functions
 
 % Create a set of points that fall in centres of pixels
 xv = linspace(pixel_width/2, pixel_width*(Nx-1/2), Nx);

@@ -1,4 +1,4 @@
-function visualiseParticles(thetas, theta_mins, theta_maxs, parameter_names)
+function visualiseParticles(thetas, theta_mins, theta_maxs, parameter_names, Ds)
 % This function visualises a set of particles from a run of an SMC
 % algorithm. The code is set up to be used in general, with the user
 % supplying necessary information (e.g. parameter names) in the wrapper
@@ -69,7 +69,7 @@ for i = 1:N_thetas-1
         subplot( N_rows, N_cols, count);
         
         % Plot particle locations
-        plot(thetas(:,i), thetas(:,j), '.', 'MarkerSize', 15);
+        scatter(thetas(:,i), thetas(:,j), 10, Ds, 'filled');
 
         
         % Define axes

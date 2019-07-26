@@ -1,5 +1,4 @@
 function [presence, O_b, O_d, F] = createFibroPattern(mesh, density, params, Ps, offsets)
-
 % This function takes a list of points and a set of parameters (listed 
 % below), and creates a pattern of fibrosis accordingly.
 %
@@ -31,7 +30,7 @@ params = num2cell(params);
 
 % Create a rotated set of points for the application of anisotropy and
 % creation of fibre-aligned pattern. Stored as two rows for ease of matrix
-% transforms and input into C functions
+% transforms and input into C++ functions
 R_points = [ [ cos(direction) sin(direction) ]; [-sin(direction), cos(direction)] ] * mesh.points';
 
 
@@ -60,9 +59,7 @@ F = 0.5 + 0.5 * cos(2*pi * (R_points(2,:) / fibre_sep + phasefield_strength * (p
 
 % Sharpen this field by powering it up many times (hard-coded for
 % efficiency, but can be easily modified if a different 'sharpening factor'
-% is desired). Repeated multiplication is much more efficient than the .^
-% operator, and so the operation of taking the 15th exponent is written out
-% the long way.
+% is desired). 
 F = F .* F .* F .* F .* F .* F .* F .* F .* F .* F .* F .* F .* F .* F .* F;
 
 

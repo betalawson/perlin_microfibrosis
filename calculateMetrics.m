@@ -14,8 +14,5 @@ function metrics = calculateMetrics(pattern)
 % Calculate the nine FFT ellipse-derived metrics
 ellipse_metrics = ellipseMetrics(pattern);
 
-% Calculate the Moran's I index of spatial autocorrelation
-morans_I = calculateMoransI(pattern);
-
-% Combine these into a single vector
-metrics = [ellipse_metrics, morans_I];
+% Currently only using these metrics, so just return them as the vector
+metrics = [ellipse_metrics];
