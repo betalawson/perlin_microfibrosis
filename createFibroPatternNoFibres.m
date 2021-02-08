@@ -21,7 +21,7 @@ function [presence, O_b, O_d] = createFibroPatternNoFibres(mesh, density, params
 % PARAMS:   Parameters are provided as a single vector, for ease of
 %           interface with other code.
 %           Params vector is specified as:
-%           [ fibreness, fibre_separation, patchiness, feature_size, roughness, patch_size, alignment_ratio, direction]
+%           [patchiness, feature_size, roughness, patch_size, alignment_ratio, direction]
 
 % Read out paramaters from vector
 params = num2cell(params);

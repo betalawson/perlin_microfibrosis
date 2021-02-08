@@ -4,10 +4,30 @@ function patterns = generatePatterns(params, density, N_patterns, mesh)
 %
 % INPUTS:
 %
-% params - the parameter values for the generator to use
+% params - the parameter values for the generator to use (1x8 vector)
 % density - density of fibrosis in the patterns to be generated
 % N_patterns - the number of patterns to generate
 % (mesh) - optionally provided mesh to specify size of patterns
+%
+% PARAMETER INFORMATION:
+%
+% 1 - FIBRENESS: The extent to which patterns exhibit long, thin fibres 
+%     aligned in consistent directions
+%     ::: If set to NaN, a pattern without fibres will be created :::
+% 2 - FIBRE SEPARATION: The average spacing between fibres (in units
+%     matching those used in input mesh
+% 3 - PATCHINESS: The extent of inconsistency in pattern density (high
+%     patchiness will produce distinct regions of higher and lower density)
+% 4 - FEATURE SIZE: The overall size of obstacle features in the mesh (in
+%     units matching the mesh)
+% 5 - ROUGHNESS: The roughness of feature edges (values from [0,1], may
+%     cause issues for values of precisely 0 or 1)
+% 6 - PATCH SIZE: The size of regions over which density varies (with 
+%     extent according to PATCHINESS)
+% 7 - FIBRE ALIGNMENT: The extent to which non-fibre features are aligned
+%     to the fibre direction (i.e. extent of feature anisotropy)
+% 8 - DIRECTION: An angle (in radians) defining the orientation of fibres
+%     and/or feature anisotropy
 
 % Load in the seed data
 load('fibro_seedinfo.mat', 'permute_tables', 'offset_tables');
@@ -24,8 +44,11 @@ end
 for m = 1:N_patterns
     
     % Use the fibre-free generator if NaNs are present in input params
-    % vector, otherwise standard generator
+    % vector, or if only non-fibre parameters provided, otherwise 
+    % use the standard generator
     if any(isnan(params))
+        [presence, ~, ~] = createFibroPatternNoFibres(mesh, density, params(3:8), permute_tables{m}, offset_tables{m});
+    elseif  length(params) == 6
         [presence, ~, ~] = createFibroPatternNoFibres(mesh, density, params, permute_tables{m}, offset_tables{m});
     else
         [presence, ~, ~, ~] = createFibroPattern(mesh, density, params, permute_tables{m}, offset_tables{m});

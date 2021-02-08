@@ -27,7 +27,7 @@ pixel_width = 1/136;      % (mm)
 
 
 % PARAMETERS ARE:
-% [ fibreness, fibre_separation, patchiness, feature_size, roughness, patch_size, alignment_ratio]
+% [ fibreness, fibre_separation, patchiness, feature_size, roughness, patch_size, alignment_ratio, direction]
 
 % Define the prior for ABC-SMC. Mins and maxs are the ranges of prior,
 % scale_param selects between uniform and logarithmic prior
@@ -107,34 +107,15 @@ particles.vals = part_vals;
 particles.metrics = part_metrics;
 particles.Ds = part_Ds;
 
-% Set up a filename according to options supplied
-filename = [histo_pattern, num2str(N_parts),'_', ellipse_mode];
-
-% Append options to filename if supplied
-if options_supplied
-        
-    % Check all fields and append to filename
-    if isfield(options,'jumping_type')
-        filename = [filename,'_jt_',options.jumping_type];
-    end
-    if isfield(options,'resample_weighting')
-        filename = [filename,'_rw_',options.resample_weighting];
-    end
-    if isfield(options,'metric_weighting')
-        filename = [filename,'_mw_',options.metric_weighting];
-    end
-    if isfield(options,'keep_fraction')
-        filename = [filename,'_kf_',num2str(options.keepfraction)];
-    end
-    if isfield(options,'max_MCMC_steps')
-        filename = [filename,'_maxMCMC_',num2str(options.max_MCMC_steps)];
-    end
-    
+% If a filename was provided, use that, otherwise save to a temporary
+% filename
+if isfield(options, 'filename')
+    filename = options.filename;
+else
+    filename = 'pattern_output';
 end
 
 % Save the particles
 save([filename,'.mat'],'particles');
 
-
 end
-

@@ -87,14 +87,14 @@ function [part_thetas, part_outputs, part_summaries, part_Ds] = performSMCABC(N_
 
 % Default options (can be changed here or adjusted on the fly by supplying options argument)
 resample_weighting = 'equal';  % 'equal' - All kept particles are weighted equally for resampling steps
-% 'weighted' - Particles are weighted according to their discrepancy values when resampling (taking
-%              worst kept particle as three sigma in a normal distribution, and then normalising
-%              weights so they sum to one)
+%                                'weighted' - Particles are weighted according to their discrepancy values when resampling (taking
+%                                             worst kept particle as three sigma in a normal distribution, and then normalising
+%                                             weights so they sum to one)
 
 metric_weighting = 'variance';  % 'mahalanobis' - Mahalanobis distance is used for calculations of discrepancy
-% 'variance' - Metrics are scaled according to their variance, but covariances are ignored
-% 'none' - Euclidean distance is used
-% (All options still include rescaling of angle metrics with respect to eccentricity)
+%                                 'variance' - Metrics are scaled according to their variance, but covariances are ignored
+%                                 'none' - Euclidean distance is used
+%                                 (All options still include rescaling of angle metrics with respect to eccentricity)
 
 keep_fraction = 0.75;         % The proportion of particles to keep during each resample step (recommended ~0.5 as a starting value)
 
